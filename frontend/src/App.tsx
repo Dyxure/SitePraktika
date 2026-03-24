@@ -1,4 +1,5 @@
 import Footer from "./components/Footer";
+import MapSection from "./components/MapSection";
 import SiteHeader from "./components/SiteHeader";
 import FormRenderer from "./components/FormRenderer";
 import {
@@ -198,10 +199,28 @@ export default function App() {
           </div>
         </section>
 
+        <section className="section" id="competition">
+          <h2 className="section-title">{competition.title}</h2>
+          <div className="card">
+            <p>{competition.lead}</p>
+          </div>
+        </section>
+
+        <section className="section" id="documents">
+          <h2 className="section-title">Документы</h2>
+          <div className="grid-3">
+            {documents.map((doc) => (
+              <div className="card" key={doc.title}>
+                <h3>{doc.title}</h3>
+                <p>{doc.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="section" id="contacts">
           <h2 className="section-title">Контакты</h2>
           <div className="card">
-            <p>{contact.address}</p>
             <p className="mt-8">{contact.phone}</p>
             <p className="mt-8">
               Telegram: <a href={contact.telegramUrl}>@terraarte</a>
@@ -233,7 +252,9 @@ export default function App() {
           />
         </section>
       </main>
-
+      <section className="section" id="map">
+        <MapSection />
+      </section>
       <Footer />
     </div>
   );
