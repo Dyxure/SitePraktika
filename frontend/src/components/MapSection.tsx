@@ -6,7 +6,7 @@ export default function MapSection() {
       <div className="map-split">
         <div className="map-left">
           <div className="text-map">
-            <img className="map-logo" src="/images/logo.png" alt="Земля Искусства" />
+            <img src="/image/лого 2.svg" alt="Logo" />
 
             <div className="map-contacts">
               <div className="map-contact">{contact.phone?.[1] ?? contact.phone?.[0]}</div>
