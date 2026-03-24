@@ -1,7 +1,9 @@
 import Footer from "./components/Footer";
+import FaqSection from "./components/FaqSection";
 import MapSection from "./components/MapSection";
 import SiteHeader from "./components/SiteHeader";
 import FormRenderer from "./components/FormRenderer";
+import StudentsWorksSection from "./components/StudentsWorksSection";
 import {
   competitionFormFields,
   learningFormFields,
@@ -136,7 +138,7 @@ export default function App() {
             </p>
           </div>
           <div className="directions-container">
-            {directions.map((item, index) => (
+            {directions.map((item) => (
               <div className="direction-card" key={item.title}>
                 <div className="direction-card-image">
                   {/\.(png|jpg|jpeg|webp|svg)$/i.test(item.image) ? (
@@ -251,6 +253,8 @@ export default function App() {
             }}
           />
         </section>
+        <StudentsWorksSection />
+        <FaqSection />
       </main>
       <section className="section" id="map">
         <MapSection />

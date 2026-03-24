@@ -20,7 +20,7 @@ export default function MapSection() {
               <span className="map-dot map-dot-pink" />
             </div>
 
-            <div className="map-note">Ждём вас и ваших детей на наших занятиях!</div>
+            <div className="map-note">Ждём вас и ваших детей на <br />наших занятиях!</div>
           </div>
         </div>
         <div className="map-right">
