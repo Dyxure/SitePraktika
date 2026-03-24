@@ -11,7 +11,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-10">
-          <a href="/contacts">
+          <a href="#contacts">
             Контакты
           </a>
         </div>

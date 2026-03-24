@@ -2,14 +2,14 @@
 export type NavItem = { to: string; label: string }
 
 export const navItems: NavItem[] = [
-  { to: '/about', label: 'О школе' },
-  { to: '/directions', label: 'Направления' },
-  { to: '/teachers', label: 'Преподаватели' },
-  { to: '/workshops', label: 'Мастер-классы' },
-  { to: '/courses', label: 'Курсы' },
-  { to: '/competition', label: 'Конкурс' },
-  { to: '/documents', label: 'Документы' },
-  { to: '/contacts', label: 'Контакты' },
+  { to: '#about', label: 'О школе' },
+  { to: '#directions', label: 'Направления' },
+  { to: '#teachers', label: 'Преподаватели' },
+  { to: '#workshops', label: 'Мастер-классы' },
+  { to: '#courses', label: 'Курсы' },
+  { to: '#competition', label: 'Конкурс' },
+  { to: '#documents', label: 'Документы' },
+  { to: '#contacts', label: 'Контакты' },
 ]
 
 export const contact = {
