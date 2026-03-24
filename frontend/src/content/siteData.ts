@@ -136,11 +136,24 @@ export const courses = [
 
 export const documents = [
   {
-    title: "Лицензия / сведения",
-    text: "Тут будет ссылка/вложения на документы.",
+    title: "Диплом",
+    text: "image/Диплом1.png",
   },
-  { title: "Сертификаты", text: "Тут будут материалы и подтверждения." },
-  { title: "Положения", text: "Если есть — положения/регламенты." },
+  { title: "Благодарственое письмо", text: "image/Письмо1.png" },
+  {
+    title: "Диплом",
+    text: "image/Диплом2.png",
+  },
+  { title: "Благодарственое письмо", text: "image/Письмо2.png" },
+  {
+    title: "Диплом",
+    text: "image/Диплом3.png",
+  },
+  { title: "Благодарственое письмо", text: "image/Письмо3.png" },
+  {
+    title: "Диплом",
+    text: "image/Диплом4.png",
+  },
 ];
 
 export const competition = {
