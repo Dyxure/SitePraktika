@@ -32,7 +32,7 @@ export default function App() {
         </div>
       </div>
 
-      <main className="container">
+      <main>
         <section className="hero" id="top">
           <div className="hero-grid">
             <div className="hero-card">
@@ -85,18 +85,6 @@ export default function App() {
           </div>
         </section>
 
-        <section className="section" id="directions">
-          <h2 className="section-title">Направления</h2>
-          <div className="grid-3">
-            {directions.map((item) => (
-              <div className="card" key={item.title}>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section className="section" id="teachers">
           <h2 className="section-title">Преподаватели</h2>
           <div className="grid-3">
@@ -119,22 +107,62 @@ export default function App() {
           </div>
         </section>
 
-        <section className="section" id="documents">
-          <div className="grid-3">
-            {documents.map((doc) => (
-              <div className="card" key={doc.title}>
-                {doc.text.endsWith(".png") ||
-                doc.text.endsWith(".jpg") ||
-                doc.text.endsWith(".jpeg") ||
-                doc.text.endsWith(".webp") ? (
-                  <img
-                    src={doc.text.replace("/public", "")}
-                    alt={doc.title}
-                    style={{ maxWidth: "100%", height: "auto" }}
-                  />
-                ) : (
-                  <p>{doc.text}</p>
-                )}
+        <section className="DocumentsSection" id="documents">
+          <div className="documents-container">
+            <div className="grid-7">
+              {documents.map((doc, index) => (
+                <div key={index} className="document-item">
+                  {/\.(png|jpg|jpeg|webp|svg)$/i.test(doc.text) ? (
+                    <img
+                      src={doc.text.replace("/public", "")}
+                      alt={doc.title || `Документ ${index + 1}`}
+                    />
+                  ) : (
+                    <p>{doc.text}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="DirectionsSection" id="directions">
+          <div className="section-title">
+            <h3>Направления</h3>
+            <p className="direction-card-description">
+              Курсы рассчитаны на детей и родителей, которые хотят освоить
+              простые приёмы.
+            </p>
+          </div>
+          <div className="directions-container">
+            {directions.map((item, index) => (
+              <div className="direction-card" key={item.title}>
+                <div className="direction-card-image">
+                  {/\.(png|jpg|jpeg|webp|svg)$/i.test(item.image) ? (
+                    <img
+                      src={item.image.replace("/public", "")}
+                      alt={item.title}
+                    />
+                  ) : (
+                    <p>{item.image}</p>
+                  )}
+                </div>
+                <div className="direction-card-content">
+                  <h3 className="direction-card-title">{item.title}</h3>
+                  <ul className="direction-card-description">
+                    {item.descriptions?.map((desc, i) => (
+                      <li key={i}>{desc}</li>
+                    ))}
+                  </ul>
+                  <div className="direction-card-footer">
+                    <span className="direction-card-price">
+                      ОТ {item.price}/МЕС
+                    </span>
+                    <button className="direction-card-button">
+                      Выбрать курс
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
