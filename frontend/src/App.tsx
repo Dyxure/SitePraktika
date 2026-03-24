@@ -1,9 +1,27 @@
-import Footer from './components/Footer'
-import SiteHeader from './components/SiteHeader'
-import FormRenderer from './components/FormRenderer'
-import { competitionFormFields, learningFormFields } from './content/formConfigs'
-import { brand, competition, contact, courses, directions, documents, home, teachers, workshops } from './content/siteData'
-import { submitCompetition, submitLearning, type CompetitionPayload, type LearningPayload } from './lib/api'
+import Footer from "./components/Footer";
+import SiteHeader from "./components/SiteHeader";
+import FormRenderer from "./components/FormRenderer";
+import {
+  competitionFormFields,
+  learningFormFields,
+} from "./content/formConfigs";
+import {
+  brand,
+  competition,
+  contact,
+  courses,
+  directions,
+  documents,
+  home,
+  teachers,
+  workshops,
+} from "./content/siteData";
+import {
+  submitCompetition,
+  submitLearning,
+  type CompetitionPayload,
+  type LearningPayload,
+} from "./lib/api";
 
 export default function App() {
   return (
@@ -56,8 +74,14 @@ export default function App() {
         <section className="section" id="about">
           <h2 className="section-title">О школе</h2>
           <div className="card">
-            <p>{brand.name} - творческая ремесленная школа в Тюмени для детей и родителей.</p>
-            <p className="mt-10">Мы создаем безопасную среду, где можно пробовать, ошибаться, развиваться и создавать вещи своими руками.</p>
+            <p>
+              {brand.name} - творческая ремесленная школа в Тюмени для детей и
+              родителей.
+            </p>
+            <p className="mt-10">
+              Мы создаем безопасную среду, где можно пробовать, ошибаться,
+              развиваться и создавать вещи своими руками.
+            </p>
           </div>
         </section>
 
@@ -83,6 +107,34 @@ export default function App() {
                   <b>{teacher.spec}</b>
                 </p>
                 <p className="mt-8">{teacher.bio}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="section" id="competition">
+          <h2 className="section-title">{competition.title}</h2>
+          <div className="card">
+            <p>{competition.lead}</p>
+          </div>
+        </section>
+
+        <section className="section" id="documents">
+          <div className="grid-3">
+            {documents.map((doc) => (
+              <div className="card" key={doc.title}>
+                {doc.text.endsWith(".png") ||
+                doc.text.endsWith(".jpg") ||
+                doc.text.endsWith(".jpeg") ||
+                doc.text.endsWith(".webp") ? (
+                  <img
+                    src={doc.text.replace("/public", "")}
+                    alt={doc.title}
+                    style={{ maxWidth: "100%", height: "auto" }}
+                  />
+                ) : (
+                  <p>{doc.text}</p>
+                )}
               </div>
             ))}
           </div>
@@ -118,25 +170,6 @@ export default function App() {
           </div>
         </section>
 
-        <section className="section" id="competition">
-          <h2 className="section-title">{competition.title}</h2>
-          <div className="card">
-            <p>{competition.lead}</p>
-          </div>
-        </section>
-
-        <section className="section" id="documents">
-          <h2 className="section-title">Документы</h2>
-          <div className="grid-3">
-            {documents.map((doc) => (
-              <div className="card" key={doc.title}>
-                <h3>{doc.title}</h3>
-                <p>{doc.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section className="section" id="contacts">
           <h2 className="section-title">Контакты</h2>
           <div className="card">
@@ -155,7 +188,7 @@ export default function App() {
             submitText="Отправить заявку"
             hint="Оставьте контакты, мы свяжемся с вами и подберем удобное расписание."
             onSubmit={async (payload) => {
-              await submitLearning(payload)
+              await submitLearning(payload);
             }}
           />
         </section>
@@ -167,7 +200,7 @@ export default function App() {
             submitText="Подать заявку"
             hint="После отправки мы свяжемся для подтверждения участия."
             onSubmit={async (payload) => {
-              await submitCompetition(payload)
+              await submitCompetition(payload);
             }}
           />
         </section>
@@ -175,6 +208,5 @@ export default function App() {
 
       <Footer />
     </div>
-  )
+  );
 }
-
