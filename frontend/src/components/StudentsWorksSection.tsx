@@ -12,9 +12,14 @@ export default function StudentsWorksSection() {
   return (
     <section className="students-works-section" id="students-works">
       <div className="students-works-container">
-        <h2 className="students-works-title">Работы наших учеников</h2>
+        <h2 className="students-works-title" id="students-works-heading">
+          Работы наших учеников
+        </h2>
 
-        <div className="students-works-grid">
+        <div
+          className="students-works-grid"
+          aria-labelledby="students-works-heading"
+        >
           {works.map((work, index) => (
             <div
               className={
@@ -22,10 +27,21 @@ export default function StudentsWorksSection() {
               }
               key={work.src}
             >
-              <img src={work.src} alt={work.alt} loading="lazy" />
+              <img src={work.src} alt={work.alt} loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
+      </div>
+      <div className="students-works-decor" aria-hidden="true">
+        <span className="decor-item decor-pink decor-quarter-left" />
+        <span className="decor-item decor-white" />
+        <span className="decor-item decor-pink" />
+        <span className="decor-item decor-green decor-half-left" />
+        <span className="decor-item decor-pink decor-half-right" />
+        <span className="decor-item decor-yellow decor-full" />
+        <span className="decor-item decor-orange decor-half-right" />
+        <span className="decor-item decor-pink" />
+        <span className="decor-item decor-green" />
       </div>
     </section>
   );

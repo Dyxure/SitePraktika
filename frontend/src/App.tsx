@@ -1,6 +1,7 @@
 import Footer from "./components/Footer";
 import FaqSection from "./components/FaqSection";
 import MapSection from "./components/MapSection";
+import ReviewsSection from "./components/ReviewsSection";
 import SiteHeader from "./components/SiteHeader";
 import FormRenderer from "./components/FormRenderer";
 import StudentsWorksSection from "./components/StudentsWorksSection";
@@ -253,6 +254,7 @@ export default function App() {
             }}
           />
         </section>
+        <ReviewsSection />
         <StudentsWorksSection />
         <FaqSection />
       </main>
