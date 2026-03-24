@@ -13,8 +13,7 @@ export const navItems: NavItem[] = [
 ];
 
 export const contact = {
-  address: "Тюмень, ул. (адрес уточняется)",
-  phone: "+7 (___) ___-__-__",
+  phone: ["8-(912)-079-65-08", "8-(950)-492-58-48"],
   telegramUrl: "https://t.me/",
 };
 
@@ -137,24 +136,11 @@ export const courses = [
 
 export const documents = [
   {
-    title: "Диплом",
-    text: "image/Диплом1.png",
+    title: "Лицензия / сведения",
+    text: "Тут будет ссылка/вложения на документы.",
   },
-  { title: "Благодарственое письмо", text: "image/Письмо1.png" },
-  {
-    title: "Диплом",
-    text: "image/Диплом2.png",
-  },
-  { title: "Благодарственое письмо", text: "image/Письмо2.png" },
-  {
-    title: "Диплом",
-    text: "image/Диплом3.png",
-  },
-  { title: "Благодарственое письмо", text: "image/Письмо3.png" },
-  {
-    title: "Диплом",
-    text: "image/Диплом4.png",
-  },
+  { title: "Сертификаты", text: "Тут будут материалы и подтверждения." },
+  { title: "Положения", text: "Если есть — положения/регламенты." },
 ];
 
 export const competition = {

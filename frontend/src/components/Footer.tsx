@@ -7,12 +7,13 @@ export default function Footer() {
         <div className="flex-row-wrap-center justify-between">
           <div className="fw-800">Земля Искусства</div>
           <div className="text-muted">
-            {contact.address} · {contact.phone}
+             · {contact.phone}
           </div>
         </div>
         <div className="mt-10">
+          <img src="/images/logo.png" alt="Logo" />
           <a href="#contacts">
-            Контакты
+            Политика конфиденциальности
           </a>
         </div>
       </div>
