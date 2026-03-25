@@ -1,19 +1,34 @@
 import { useState, useEffect } from 'react';
 import type { TouchEvent } from 'react';
 
+const MOBILE_MQ = '(max-width: 640px)';
+
 const reviews = [
-  { id: 1, img: "/image/отзывы/отзыв1_1.png", alt: "Отзыв 1" },
-  { id: 2, img: "/image/reviews/review-2.jpg", alt: "Отзыв 2" },
-  { id: 3, img: "/image/reviews/review-3.jpg", alt: "Отзыв 3" },
-  { id: 4, img: "/image/reviews/review-4.jpg", alt: "Отзыв 4" },
-  { id: 5, img: "/image/reviews/review-5.jpg", alt: "Отзыв 5" },
-  { id: 6, img: "/image/reviews/review-6.jpg", alt: "Отзыв 6" },
+  { id: 1, img: "/image/отзывы/отзыв1.svg", alt: "Отзыв 1" },
+  { id: 2, img: "/image/отзывы/отзыв2.svg", alt: "Отзыв 2" },
+  { id: 3, img: "/image/отзывы/отзыв3.svg", alt: "Отзыв 3" },
+  { id: 4, img: "/image/отзывы/отзыв4.svg", alt: "Отзыв 4" },
+  { id: 5, img: "/image/отзывы/отзыв5.svg", alt: "Отзыв 5" },
+  { id: 6, img: "/image/отзывы/отзыв6.svg", alt: "Отзыв 6" },
 ];
 
 export default function ReviewsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_MQ);
+
+    const apply = () => {
+      setIsMobile(mq.matches);
+    };
+
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,10 +70,11 @@ export default function ReviewsSection() {
     if (isRightSwipe) prevSlide();
   };
 
-  // Получаем 3 карточки для отображения (текущая, следующая, послеследующая)
+  // Получаем карточки для отображения: на телефоне 2, на десктопе 3
   const getVisibleReviews = () => {
     const result = [];
-    for (let i = 0; i < 3; i++) {
+    const visibleCount = isMobile ? 2 : 3;
+    for (let i = 0; i < visibleCount; i++) {
       const index = (currentIndex + i) % reviews.length;
       result.push({ ...reviews[index], position: i });
     }
