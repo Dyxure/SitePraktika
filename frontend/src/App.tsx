@@ -1,20 +1,24 @@
+import { useState } from "react";
 import Footer from "./components/Footer";
 import FaqSection from "./components/FaqSection";
 import MapSection from "./components/MapSection";
 import ReviewsSection from "./components/ReviewsSection";
 import SiteHeader from "./components/SiteHeader";
-import FormRenderer from "./components/FormRenderer";
 import StudentsWorksSection from "./components/StudentsWorksSection";
+import BookingModal, {
+  type BookingOfferType,
+} from "./components/BookingModal";
 import { courses, directions, documents, workshops } from "./content/siteData";
 
 export default function App() {
+  const [booking, setBooking] = useState<{
+    type: BookingOfferType;
+    title: string;
+  } | null>(null);
+
   return (
     <div>
-      <div className="topbar">
-        <div className="container">
-          <SiteHeader />
-        </div>
-      </div>
+      <SiteHeader />
 
       <main>
         <section className="hero" id="top">
@@ -28,8 +32,24 @@ export default function App() {
             нашу школу!
           </p>
           <div className="b-container">
-            <button className="b1">Выбрать курс</button>
-            <button className="b2">Получить пробный урок</button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() =>
+                setBooking({ type: "course", title: "Подбор курса" })
+              }
+            >
+              Выбрать курс
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() =>
+                setBooking({ type: "course", title: "Пробное занятие" })
+              }
+            >
+              Получить пробный урок
+            </button>
           </div>
         </section>
 
@@ -72,29 +92,52 @@ export default function App() {
           </div>
         </section>
 
-        <section className="section" id="AboutUs">
-          <div className="containerAbout">
-            <h2 className="section-title">О нас</h2>
-            <img src="image/Group 12.png" alt="image3" className="image3" />
-            <div className="overlay-content">
-              <h1 className="main-title">
-                Креативный центр "Земля искусства" — точка притяжения для
+        <section className="section section-about" id="about">
+          <div className="about-panel">
+            <img
+              className="about-panel-bg"
+              src="image/Group 12.png"
+              alt=""
+              decoding="async"
+            />
+            <div className="about-panel-inner">
+              <p className="about-lead">
+                Креативный центр «Земля искусства» — точка притяжения для
                 талантливых людей.
-              </h1>
-
-              <ul className="text-list">
-                <li>Школа художественных ремёсел «Земля искусства»;</li>
-                <li>Гончарная мастерская "SW ceramica";</li>
-                <li>
-                  Автономная некоммерческая организация Тюменской области "Дом
-                  народных художественных промыслов и ремёсел";
-                </li>
-                <li>
-                  Этнографическая ремесленная мастерская "Тюменский махровый
-                  ковер";
-                </li>
-                <li>Выставочное арт-пространство "Земля искусства".</li>
-              </ul>
+              </p>
+              <div className="about-body">
+                <h2 className="about-heading">О нас</h2>
+                <ul className="about-list">
+                  <li>Школа художественных ремёсел «Земля искусства»;</li>
+                  <li>Гончарная мастерская «SW ceramica»;</li>
+                  <li>
+                    <span className="about-text-desktop">
+                      Автономная некоммерческая организация Тюменской области
+                      «Дом народных художественных промыслов и ремёсел»;
+                    </span>
+                    <span className="about-text-mobile">
+                      АНО ТО «Дом народных промыслов и ремёсел»;
+                    </span>
+                  </li>
+                  <li>
+                    <span className="about-text-desktop">
+                      Этнографическая ремесленная мастерская «Тюменский махровый
+                      ковёр»;
+                    </span>
+                    <span className="about-text-mobile">
+                      Мастерская «Тюменский махровый ковёр»;
+                    </span>
+                  </li>
+                  <li>
+                    <span className="about-text-desktop">
+                      Выставочное арт-пространство «Земля искусства».
+                    </span>
+                    <span className="about-text-mobile">
+                      Арт-пространство «Земля искусства».
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
@@ -140,17 +183,27 @@ export default function App() {
           </div>
 
           <div className="button-container">
-            <button className="btn-primary">Выбрать курс</button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() =>
+                setBooking({ type: "course", title: "Подбор курса" })
+              }
+            >
+              Выбрать курс
+            </button>
           </div>
         </section>
 
-        <section className="section" id="Competitions">
+        <section className="section" id="competition">
           <div className="Competitions-list">
             <h2>Конкурсы</h2>
           </div>
 
           <div className="button-container">
-            <button className="btn-primary">Оставить заявку на конкурс</button>
+            <a href="#contacts" className="btn btn-primary">
+              Оставить заявку на конкурс
+            </a>
           </div>
         </section>
 
@@ -174,9 +227,9 @@ export default function App() {
         </section>
 
         <section className="DirectionsSection" id="directions">
-          <div className="section-title">
+          <div className="section-head">
             <h3>Направления</h3>
-            <p className="direction-card-description">
+            <p className="section-head-lead">
               Курсы рассчитаны на детей и родителей, которые хотят освоить
               простые приёмы.
             </p>
@@ -203,7 +256,16 @@ export default function App() {
                   </ul>
                   <div className="direction-card-footer">
                     <span className="direction-card-price">{item.price}</span>
-                    <button className="direction-card-button">
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() =>
+                        setBooking({
+                          type: "direction",
+                          title: item.title,
+                        })
+                      }
+                    >
                       Выбрать направление
                     </button>
                   </div>
@@ -214,7 +276,7 @@ export default function App() {
         </section>
 
         <section className="WorksopsSection" id="workshops">
-          <div className="section-title">
+          <div className="section-head">
             <h3>Мастер-классы</h3>
           </div>
           <div className="directions-container">
@@ -239,7 +301,18 @@ export default function App() {
                   </ul>
                   <div className="direction-card-footer">
                     <span className="direction-card-price">{item.price}</span>
-                    <button className="direction-card-button">Заказать</button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() =>
+                        setBooking({
+                          type: "workshop",
+                          title: item.title,
+                        })
+                      }
+                    >
+                      Заказать
+                    </button>
                   </div>
                 </div>
               </div>
@@ -248,7 +321,7 @@ export default function App() {
         </section>
 
         <section className="CoursesSection" id="courses">
-          <div className="section-title">
+          <div className="section-head">
             <h3>Курсы</h3>
           </div>
           <div className="directions-container">
@@ -273,7 +346,16 @@ export default function App() {
                   </ul>
                   <div className="direction-card-footer">
                     <span className="direction-card-price">{item.price}</span>
-                    <button className="direction-card-button">
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() =>
+                        setBooking({
+                          type: "course",
+                          title: item.title,
+                        })
+                      }
+                    >
                       Выбрать курс
                     </button>
                   </div>
@@ -286,10 +368,16 @@ export default function App() {
         <StudentsWorksSection />
         <FaqSection />
       </main>
-      <section className="section" id="map">
+      <section className="section section--contacts" id="contacts">
         <MapSection />
       </section>
       <Footer />
+      <BookingModal
+        isOpen={booking !== null}
+        onClose={() => setBooking(null)}
+        offerType={booking?.type ?? null}
+        offerTitle={booking?.title ?? ""}
+      />
     </div>
   );
 }

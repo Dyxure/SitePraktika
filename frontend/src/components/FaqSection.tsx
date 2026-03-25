@@ -42,10 +42,10 @@ export default function FaqSection() {
             Пройдите пробное БЕСПЛАТНОЕ занятие прямо сейчас!
           </p>
           <div className="faq-cta-actions">
-            <a className="faq-btn faq-btn-primary" href="#apply-learning">
+            <a className="btn btn-primary" href="#contacts">
               Получить пробный урок
             </a>
-            <a className="faq-btn faq-btn-ghost" href="#directions">
+            <a className="btn btn-outline" href="#directions">
               Выбрать курс
             </a>
           </div>

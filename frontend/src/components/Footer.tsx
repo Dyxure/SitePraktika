@@ -7,17 +7,25 @@ export default function Footer() {
         <div className="flex-row-wrap-center justify-between">
         <div className="mt-10">
           <img src="/image/лого 2.svg" alt="Logo" />
-          <a href="#contacts">
+          <a href="#">
             Политика <br />конфиденциальности
           </a>
         </div>
         <div className="text-muted">
-            <p>О нас</p>
-            <p>Наши курсы</p>
+            <p>
+              <a href="#about">О нас</a>
+            </p>
+            <p>
+              <a href="#courses">Наши курсы</a>
+            </p>
           </div>
           <div className="text-muted">
-            <p>Отзывы</p>
-            <p>Контакты</p>
+            <p>
+              <a href="#reviews">Отзывы</a>
+            </p>
+            <p>
+              <a href="#contacts">Контакты</a>
+            </p>
           </div>
           <div className="text-muted2">
              {contact.phone[0]} <br />

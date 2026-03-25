@@ -14,38 +14,24 @@ export default function SiteHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Плавный скролл к якорям
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault()
-    const element = document.querySelector(href)
-    if (element) {
-      const offsetTop = element.getBoundingClientRect().top + window.pageYOffset - 80
-      window.scrollTo({
-        top: offsetTop,
-        behavior: 'smooth'
-      })
-      setIsMobileMenuOpen(false)
-    }
-  }
-
   return (
     <>
       <header className={`site-header ${isScrolled ? 'scrolled' : ''}`}>
         <div className="header-container">
           {/* Логотип */}
-          <a href="#top" className="header-logo" aria-label={brand.name}>
+          <a
+            href="#top"
+            className="header-logo"
+            aria-label={brand.name}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             <img src="/image/лого 2.svg" alt={brand.name} className="logo-image" />
           </a>
 
           {/* Десктопная навигация */}
           <nav className="header-nav desktop-nav">
             {navItems.map((item) => (
-              <a
-                key={item.to}
-                href={item.to}
-                onClick={(e) => scrollToSection(e, item.to)}
-                className="nav-link"
-              >
+              <a key={item.to} href={item.to} className="nav-link">
                 {item.label}
               </a>
             ))}
@@ -73,8 +59,8 @@ export default function SiteHeader() {
               <a
                 key={item.to}
                 href={item.to}
-                onClick={(e) => scrollToSection(e, item.to)}
                 className="mobile-nav-link"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.label}
               </a>

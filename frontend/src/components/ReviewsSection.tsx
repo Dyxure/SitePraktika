@@ -84,7 +84,7 @@ export default function ReviewsSection() {
   const visibleReviews = getVisibleReviews();
 
   return (
-    <section className="reviews-section">
+    <section className="reviews-section" id="reviews">
       <div className="reviews-container">
         <h2 className="reviews-title">Отзывы о нашей работе</h2>
         

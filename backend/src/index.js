@@ -126,6 +126,16 @@ const competitionSchema = z
   })
   .passthrough()
 
+const bookingSchema = z
+  .object({
+  fullName: z.string().min(1),
+  phone: z.string().min(1),
+  email: z.string().email(),
+  offerType: z.enum(['direction', 'workshop', 'course']),
+  offerTitle: z.string().min(1),
+  })
+  .passthrough()
+
 function learningToText(payload) {
   const lines = [
     `Заявка на обучение:`,
@@ -148,6 +158,24 @@ function competitionToText(payload) {
   ]
   if (payload.additional && String(payload.additional).trim()) lines.push(`Дополнительно: ${payload.additional}`)
   return lines.join('\n')
+}
+
+const offerTypeLabels = {
+  direction: 'Направление',
+  workshop: 'Мастер-класс',
+  course: 'Курс',
+}
+
+function bookingToText(payload) {
+  const kind = offerTypeLabels[payload.offerType] ?? payload.offerType
+  return [
+    `Заявка с сайта:`,
+    `Тип: ${kind}`,
+    `Выбор: ${payload.offerTitle}`,
+    `ФИО: ${payload.fullName}`,
+    `Телефон: ${payload.phone}`,
+    `Email: ${payload.email}`,
+  ].join('\n')
 }
 
 app.post('/api/forms/learning', async (req, res) => {
@@ -181,6 +209,28 @@ app.post('/api/forms/competition', async (req, res) => {
 
     await Promise.all([
       sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
+      sendTelegramMessage({ text: telegramText }),
+    ])
+
+    res.json({ ok: true })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Ошибка'
+    if (err?.name === 'ZodError') {
+      return res.status(400).json({ ok: false, error: 'Проверьте поля формы', details: message })
+    }
+    return res.status(500).json({ ok: false, error: message })
+  }
+})
+
+app.post('/api/forms/booking', async (req, res) => {
+  try {
+    const payload = bookingSchema.parse(req.body)
+
+    const text = bookingToText(payload)
+    const telegramText = `<b>Заявка (курс / МК / направление)</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
+
+    await Promise.all([
+      sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
       sendTelegramMessage({ text: telegramText }),
     ])
 

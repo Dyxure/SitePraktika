@@ -41,3 +41,15 @@ export async function submitCompetition(payload: CompetitionPayload) {
   return postJson('/api/forms/competition', payload)
 }
 
+export type BookingPayload = {
+  fullName: string
+  phone: string
+  email: string
+  offerType: 'direction' | 'workshop' | 'course'
+  offerTitle: string
+}
+
+export async function submitBooking(payload: BookingPayload) {
+  return postJson('/api/forms/booking', payload)
+}
+

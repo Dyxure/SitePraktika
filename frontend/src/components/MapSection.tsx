@@ -2,7 +2,7 @@ import { contact } from '../content/siteData'
 
 export default function MapSection() {
   return (
-    <section className="map-section" id="map">
+    <section className="map-section">
       <div className="map-split">
         <div className="map-left">
           <div className="text-map">
