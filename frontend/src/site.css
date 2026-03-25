@@ -63,119 +63,234 @@ img {
   padding: 0 18px;
 }
 
-.topbar {
-  position: sticky;
+/* Фиксированный хедер */
+.site-header {
+  position: fixed;
   top: 0;
-  z-index: 50;
-  backdrop-filter: blur(10px);
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.1));
-  border-bottom: 1px solid var(--border);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #ffffff;
+  padding: 10px;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
 }
 
-@media (prefers-color-scheme: light) {
-  .topbar {
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55));
+.site-header.scrolled {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.header-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Логотип слева, навигация справа */
+  gap: 20px;
+}
+
+/* Логотип */
+.header-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.header-logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-image {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Десктопная навигация */
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.nav-link {
+  padding: 10px 16px;
+  color: #333333;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: #7cb342;
+  background: rgba(124, 179, 66, 0.08);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: #7cb342;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 60%;
+}
+
+/* Кнопка мобильного меню */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 28px;
+  height: 20px;
+  justify-content: center;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #333;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Мобильное меню */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.mobile-menu.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+}
+
+.mobile-nav-link {
+  padding: 16px 32px;
+  color: #333333;
+  font-size: 20px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.mobile-nav-link:hover {
+  color: #7cb342;
+  background: rgba(124, 179, 66, 0.1);
+}
+
+/* Отступ для контента под фиксированным хедером */
+.header-offset {
+  height: 74px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .desktop-nav {
+    gap: 4px;
+  }
+
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }
 
-.topbar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 0;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-
-.brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(243, 178, 255, 0.9), rgba(108, 231, 255, 0.9));
-  box-shadow: 0 12px 30px rgba(243, 178, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.nav {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.nav a {
-  padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.nav a:hover {
-  border-color: var(--border);
-  background: var(--panel);
-  color: var(--text);
-}
-
-.cta-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--text);
-  font-weight: 700;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  background: var(--panel-2);
-  border-color: rgba(255, 255, 255, 0.22);
-}
-
-.btn-primary {
-  border-color: rgba(243, 178, 255, 0.45);
-  background: linear-gradient(135deg, rgba(243, 178, 255, 0.22), rgba(108, 231, 255, 0.14));
-}
-
-.btn-good {
-  border-color: rgba(78, 240, 163, 0.35);
-  background: linear-gradient(135deg, rgba(78, 240, 163, 0.2), rgba(108, 231, 255, 0.08));
-}
-
-.hero {
-  padding: 44px 0 18px;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 18px;
-  align-items: stretch;
-}
-
 @media (max-width: 900px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .header-container {
+    padding: 12px 20px;
+  }
+
+  .logo-image {
+    height: 45px;
+  }
+
+  .header-offset {
+    height: 69px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    padding: 10px 16px;
+  }
+
+  .logo-image {
+    height: 40px;
+  }
+
+  .mobile-nav-link {
+    padding: 14px 24px;
+    font-size: 18px;
+  }
+
+  .header-offset {
+    height: 64px;
   }
 }
 
