@@ -5,27 +5,7 @@ import ReviewsSection from "./components/ReviewsSection";
 import SiteHeader from "./components/SiteHeader";
 import FormRenderer from "./components/FormRenderer";
 import StudentsWorksSection from "./components/StudentsWorksSection";
-import {
-  competitionFormFields,
-  learningFormFields,
-} from "./content/formConfigs";
-import {
-  brand,
-  competition,
-  contact,
-  courses,
-  directions,
-  documents,
-  home,
-  teachers,
-  workshops,
-} from "./content/siteData";
-import {
-  submitCompetition,
-  submitLearning,
-  type CompetitionPayload,
-  type LearningPayload,
-} from "./lib/api";
+import { courses, directions, documents, workshops } from "./content/siteData";
 
 export default function App() {
   return (
@@ -38,76 +18,139 @@ export default function App() {
 
       <main>
         <section className="hero" id="top">
-          <div className="hero-grid">
-            <div className="hero-card">
-              <div className="hero-card-inner">
-                <div className="kicker">
-                  <span className="kicker-dot" />
-                  {home.heroKicker}
-                </div>
-                <h1 className="h1">{home.heroTitle}</h1>
-                <p className="lead">{home.heroLead}</p>
-                <div className="cta-row">
-                  <a className="btn btn-primary" href="#apply-learning">
-                    Записаться на обучение
-                  </a>
-                  <a className="btn btn-good" href="#apply-competition">
-                    Подать заявку на конкурс
-                  </a>
-                </div>
+          <img src="image/Group 15.png" alt="imag1" className="image" />
+          <div className="homeJ">
+            <p>- первая в Тюмени ремесленная школа "Земля искусства"</p>
+          </div>
+          <p className="homeP">
+            Если ваш ребёнок любит творчество и вы хотите, чтобы он стал
+            профессионалом в одном из ремесленных направлений – приглашаем в
+            нашу школу!
+          </p>
+          <div className="b-container">
+            <button className="b1">Выбрать курс</button>
+            <button className="b2">Получить пробный урок</button>
+          </div>
+        </section>
+
+        <section className="section" id="AllCircles">
+          <div className="containerCircle">
+            <div className="text-content">
+              <h1 className="title">Все наши кружки</h1>
+
+              <div className="department">
+                <div className="department-title">1. Детское отделение</div>
+                <ul className="circles-list">
+                  <li>КЕРАМИКА</li>
+                  <li>ТКАЧЕСТВО</li>
+                </ul>
+              </div>
+
+              <div className="department">
+                <div className="department-title">2. Взрослое отделение</div>
+                <ul className="circles-list">
+                  <li>ТКАЧЕСТВО</li>
+                  <li>ИЗО</li>
+                  <li>КРУЖЕВО</li>
+                  <li>КЕРАМИКА</li>
+                </ul>
+              </div>
+
+              <div className="department">
+                <div className="department-title">3. Общее отделение</div>
+                <ul className="circles-list">
+                  <li>КЕРАМИКА</li>
+                  <li>ИЗО</li>
+                  <li>ВЫШИВКА</li>
+                  <li>ВЯЗАНИЕ</li>
+                </ul>
               </div>
             </div>
-
-            <div className="hero-card">
-              <div className="hero-side">
-                <div className="side-title">Почему выбирают {brand.name}</div>
-                <div className="points">
-                  {home.advantages.map((item) => (
-                    <div className="point" key={item.title}>
-                      <b>{item.title}</b>
-                      <span>{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="hint mt-2">{brand.subtitle}</div>
-              </div>
+            <div className="image-content">
+              <img src="image/Group 9.png" alt="image2" className="image2" />
             </div>
           </div>
         </section>
 
-        <section className="section" id="about">
-          <h2 className="section-title">О школе</h2>
-          <div className="card">
-            <p>
-              {brand.name} - творческая ремесленная школа в Тюмени для детей и
-              родителей.
-            </p>
-            <p className="mt-10">
-              Мы создаем безопасную среду, где можно пробовать, ошибаться,
-              развиваться и создавать вещи своими руками.
-            </p>
+        <section className="section" id="AboutUs">
+          <div className="containerAbout">
+            <h2 className="section-title">О нас</h2>
+            <img src="image/Group 12.png" alt="image3" className="image3" />
+            <div className="overlay-content">
+              <h1 className="main-title">
+                Креативный центр "Земля искусства" — точка притяжения для
+                талантливых людей.
+              </h1>
+
+              <ul className="text-list">
+                <li>Школа художественных ремёсел «Земля искусства»;</li>
+                <li>Гончарная мастерская "SW ceramica";</li>
+                <li>
+                  Автономная некоммерческая организация Тюменской области "Дом
+                  народных художественных промыслов и ремёсел";
+                </li>
+                <li>
+                  Этнографическая ремесленная мастерская "Тюменский махровый
+                  ковер";
+                </li>
+                <li>Выставочное арт-пространство "Земля искусства".</li>
+              </ul>
+            </div>
           </div>
         </section>
 
         <section className="section" id="teachers">
-          <h2 className="section-title">Преподаватели</h2>
-          <div className="grid-3">
-            {teachers.map((teacher) => (
-              <div className="card" key={teacher.name}>
-                <h3>{teacher.name}</h3>
-                <p>
-                  <b>{teacher.spec}</b>
-                </p>
-                <p className="mt-8">{teacher.bio}</p>
-              </div>
-            ))}
+          <div className="team-container">
+            <div className="team-member">
+              <img src="image/СветланаИ.png" alt="Светлана Ильюшонок" />
+              <h3>Светлана Ильюшонок</h3>
+              <p>
+                Художник-керамист, член союза художников ДПИ, руководитель
+                студии SW Ceramica, преподаватель.
+              </p>
+            </div>
+
+            <div className="team-member">
+              <img src="image/СветланаЮ.png" alt="Светлана Юрьевна" />
+              <h3>Светлана Юрьевна</h3>
+              <p>
+                Тобольский государственный педагогический институт им. Д.И.
+                Менделеева педагогический стаж — 20 лет.
+              </p>
+            </div>
+
+            <div className="team-member">
+              <img src="image/ЛеонидС.png" alt="Леонид Сергеевич" />
+              <h3>Леонид Сергеевич</h3>
+              <p>
+                Диплом ТюмГУ 2012 г. — Государственное и муниципальное
+                управление. Курсы Where Art Meets Architecture Курсы по работе с
+                моделью
+              </p>
+            </div>
+
+            <div className="team-member">
+              <img src="image/НатальяД.png" alt="Наталья Денисова" />
+              <h3>Наталья Денисова</h3>
+              <p>
+                Ткалья и мастер по прядению. Руководитель АНО ТО "Дом ремёсел" и
+                ООО "Тюменский Махровый Ковёр".
+              </p>
+            </div>
+          </div>
+
+          <div className="button-container">
+            <button className="btn-primary">Выбрать курс</button>
           </div>
         </section>
 
-        <section className="section" id="competition">
-          <h2 className="section-title">{competition.title}</h2>
-          <div className="card">
-            <p>{competition.lead}</p>
+        <section className="section" id="Competitions">
+          <div className="Competitions-list">
+            <h2>Конкурсы</h2>
+          </div>
+
+          <div className="button-container">
+            <button className="btn-primary">Оставить заявку на конкурс</button>
           </div>
         </section>
 
@@ -159,11 +202,9 @@ export default function App() {
                     ))}
                   </ul>
                   <div className="direction-card-footer">
-                    <span className="direction-card-price">
-                      ОТ {item.price}/МЕС
-                    </span>
+                    <span className="direction-card-price">{item.price}</span>
                     <button className="direction-card-button">
-                      Выбрать курс
+                      Выбрать направление
                     </button>
                   </div>
                 </div>
@@ -172,87 +213,74 @@ export default function App() {
           </div>
         </section>
 
-        <section className="section" id="workshops">
-          <h2 className="section-title">Мастер-классы</h2>
-          <div className="list">
-            {workshops.map((workshop) => (
-              <div className="list-item" key={workshop.title}>
-                <div className="workshop-title-row">
-                  <b>{workshop.title}</b>
-                  <span>{workshop.date}</span>
+        <section className="WorksopsSection" id="workshops">
+          <div className="section-title">
+            <h3>Мастер-классы</h3>
+          </div>
+          <div className="directions-container">
+            {workshops.map((item) => (
+              <div className="direction-card" key={item.title}>
+                <div className="direction-card-image">
+                  {/\.(png|jpg|jpeg|webp|svg)$/i.test(item.image) ? (
+                    <img
+                      src={item.image.replace("/public", "")}
+                      alt={item.title}
+                    />
+                  ) : (
+                    <p>{item.image}</p>
+                  )}
                 </div>
-                <p className="mt-8">{workshop.text}</p>
+                <div className="direction-card-content">
+                  <h3 className="workshop-card-title">{item.title}</h3>
+                  <ul className="direction-card-description">
+                    {item.descriptions?.map((desc, i) => (
+                      <li key={i}>{desc}</li>
+                    ))}
+                  </ul>
+                  <div className="direction-card-footer">
+                    <span className="direction-card-price">{item.price}</span>
+                    <button className="direction-card-button">Заказать</button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="section" id="courses">
-          <h2 className="section-title">Курсы</h2>
-          <div className="grid-3">
-            {courses.map((course) => (
-              <div className="card" key={course.title}>
-                <h3>{course.title}</h3>
-                <p>
-                  <b>{course.level}</b> - {course.time}
-                </p>
-                <p className="mt-8">{course.text}</p>
+        <section className="CoursesSection" id="courses">
+          <div className="section-title">
+            <h3>Курсы</h3>
+          </div>
+          <div className="directions-container">
+            {courses.map((item) => (
+              <div className="direction-card" key={item.title}>
+                <div className="direction-card-image">
+                  {/\.(png|jpg|jpeg|webp|svg)$/i.test(item.image) ? (
+                    <img
+                      src={item.image.replace("/public", "")}
+                      alt={item.title}
+                    />
+                  ) : (
+                    <p>{item.image}</p>
+                  )}
+                </div>
+                <div className="direction-card-content">
+                  <h3 className="courses-card-title">{item.title}</h3>
+                  <ul className="direction-card-description">
+                    {item.descriptions?.map((desc, i) => (
+                      <li key={i}>{desc}</li>
+                    ))}
+                  </ul>
+                  <div className="direction-card-footer">
+                    <span className="direction-card-price">{item.price}</span>
+                    <button className="direction-card-button">
+                      Выбрать курс
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </section>
-
-        <section className="section" id="competition">
-          <h2 className="section-title">{competition.title}</h2>
-          <div className="card">
-            <p>{competition.lead}</p>
-          </div>
-        </section>
-
-        <section className="section" id="documents">
-          <h2 className="section-title">Документы</h2>
-          <div className="grid-3">
-            {documents.map((doc) => (
-              <div className="card" key={doc.title}>
-                <h3>{doc.title}</h3>
-                <p>{doc.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="section" id="contacts">
-          <h2 className="section-title">Контакты</h2>
-          <div className="card">
-            <p className="mt-8">{contact.phone}</p>
-            <p className="mt-8">
-              Telegram: <a href={contact.telegramUrl}>@terraarte</a>
-            </p>
-          </div>
-        </section>
-
-        <section className="section" id="apply-learning">
-          <FormRenderer<LearningPayload>
-            title="Запись на обучение"
-            fields={learningFormFields}
-            submitText="Отправить заявку"
-            hint="Оставьте контакты, мы свяжемся с вами и подберем удобное расписание."
-            onSubmit={async (payload) => {
-              await submitLearning(payload);
-            }}
-          />
-        </section>
-
-        <section className="section" id="apply-competition">
-          <FormRenderer<CompetitionPayload>
-            title="Заявка на конкурс"
-            fields={competitionFormFields}
-            submitText="Подать заявку"
-            hint="После отправки мы свяжемся для подтверждения участия."
-            onSubmit={async (payload) => {
-              await submitCompetition(payload);
-            }}
-          />
         </section>
         <ReviewsSection />
         <StudentsWorksSection />
