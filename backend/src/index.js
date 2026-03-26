@@ -49,13 +49,32 @@ function hasTelegramConfig() {
   return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
 }
 
+const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 12000)
+
+async function withTimeout(promise, timeoutMs, label) {
+  let timeoutId
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} timeout after ${timeoutMs}ms`)), timeoutMs)
+  })
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
 async function sendEmail({ subject, text, html, to }) {
-  if (!hasEmailConfig()) return { skipped: true }
+  if (!hasEmailConfig()) {
+    throw new Error('Email configuration is incomplete')
+  }
 
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
     secure: String(process.env.SMTP_SECURE ?? 'false') === 'true',
+    connectionTimeout: NOTIFY_TIMEOUT_MS,
+    greetingTimeout: NOTIFY_TIMEOUT_MS,
+    socketTimeout: NOTIFY_TIMEOUT_MS,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -65,15 +84,19 @@ async function sendEmail({ subject, text, html, to }) {
   const defaultToList = process.env.EMAIL_TO.split(',').map((s) => s.trim()).filter(Boolean)
   const toList = (Array.isArray(to) ? to : [to]).filter(Boolean)
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to: toList.length ? toList : defaultToList,
-    subject,
-    text,
-    html,
-  })
+  await withTimeout(
+    transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: toList.length ? toList : defaultToList,
+      subject,
+      text,
+      html,
+    }),
+    NOTIFY_TIMEOUT_MS,
+    'email send',
+  )
 
-  return { skipped: false }
+  return { ok: true }
 }
 
 async function sendTelegramMessage({ text }) {
@@ -82,17 +105,50 @@ async function sendTelegramMessage({ text }) {
   const chatId = process.env.TELEGRAM_CHAT_ID
 
   const url = `https://api.telegram.org/bot${token}/sendMessage`
-  await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: 'HTML',
-    }),
-  })
+  const abortController = new AbortController()
+  const abortId = setTimeout(() => abortController.abort(), NOTIFY_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML',
+      }),
+      signal: abortController.signal,
+    })
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => '')
+      throw new Error(`Telegram API error: ${res.status} ${bodyText}`.trim())
+    }
+  } finally {
+    clearTimeout(abortId)
+  }
 
   return { skipped: false }
+}
+
+async function notifyOptional(tasks) {
+  const results = await Promise.allSettled(tasks)
+  const rejected = results.filter((r) => r.status === 'rejected')
+  if (rejected.length) {
+    for (const r of rejected) {
+      console.error('Notification error:', r.reason instanceof Error ? r.reason.message : r.reason)
+    }
+  }
+}
+
+async function notifyRequired(tasks) {
+  const results = await Promise.allSettled(tasks)
+  const rejected = results.filter((r) => r.status === 'rejected')
+  if (!rejected.length) return
+
+  for (const r of rejected) {
+    console.error('Required notification error:', r.reason instanceof Error ? r.reason.message : r.reason)
+  }
+
+  throw new Error('Не удалось отправить email-уведомление. Попробуйте позже.')
 }
 
 function escapeHtml(s) {
@@ -262,8 +318,10 @@ app.post('/api/forms/learning', async (req, res) => {
     const text = learningToText(payload)
     const telegramText = `<b>Заявка на обучение</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
 
-    await Promise.all([
+    await notifyRequired([
       sendEmail({ subject: 'Заявка на обучение · Земля Искусства', text }),
+    ])
+    await notifyOptional([
       sendTelegramMessage({ text: telegramText }),
     ])
 
@@ -284,7 +342,7 @@ app.post('/api/forms/competition', async (req, res) => {
     const text = competitionToText(payload)
     const telegramText = `<b>Заявка на конкурс</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
 
-    await Promise.all([
+    await notifyRequired([
       sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
       sendEmail({
         subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
@@ -292,6 +350,8 @@ app.post('/api/forms/competition', async (req, res) => {
         html: competitionConfirmToHtml(payload),
         to: payload.email,
       }),
+    ])
+    await notifyOptional([
       sendTelegramMessage({ text: telegramText }),
     ])
 
@@ -312,7 +372,7 @@ app.post('/api/forms/booking', async (req, res) => {
     const text = bookingToText(payload)
     const telegramText = `<b>Заявка (курс / МК / направление)</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
 
-    await Promise.all([
+    await notifyRequired([
       sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
       sendEmail({
         subject: 'Мы получили вашу заявку · Земля Искусства',
@@ -320,6 +380,8 @@ app.post('/api/forms/booking', async (req, res) => {
         html: bookingConfirmToHtml(payload),
         to: payload.email,
       }),
+    ])
+    await notifyOptional([
       sendTelegramMessage({ text: telegramText }),
     ])
 
