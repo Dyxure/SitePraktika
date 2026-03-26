@@ -27,7 +27,7 @@ export default function MapSection() {
           <div className="map-divider" aria-hidden="true" />
           <iframe
             className="map-iframe"
-            src="https://yandex.ru/map-widget/v1/?um=constructor%3Acabfc8c3bf6533db3ceb3ddf1e13507a8f7d91ae00fafa11a397180647893508&amp;source=constructor"
+            src="https://yandex.com/map-widget/v1/?um=constructor%3A08becd736bbac7315c5bae3037919b68314daa25d31bcb7ce48fcab5ce44a97f&amp;source=constructor"
             width="100%"
             height="500"
             frameBorder="0"
