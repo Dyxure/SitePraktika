@@ -49,7 +49,7 @@ function hasTelegramConfig() {
   return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
 }
 
-const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 7000)
+const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 4000)
 
 async function withTimeout(promise, timeoutMs, label) {
   let timeoutId
@@ -151,7 +151,7 @@ async function notifyRequired(tasks) {
   throw new Error('Не удалось отправить email-уведомление. Попробуйте позже.')
 }
 
-async function runWithRetry(fn, attempts = 2, delayMs = 700) {
+async function runWithRetry(fn, attempts = 2, delayMs = 300) {
   let lastError
   for (let i = 0; i < attempts; i += 1) {
     try {
@@ -164,6 +164,16 @@ async function runWithRetry(fn, attempts = 2, delayMs = 700) {
     }
   }
   throw lastError
+}
+
+function runNotificationTask(taskName, fn) {
+  setImmediate(async () => {
+    try {
+      await fn()
+    } catch (err) {
+      console.error(`[notify:${taskName}]`, err instanceof Error ? err.message : err)
+    }
+  })
 }
 
 function escapeHtml(s) {
@@ -336,10 +346,12 @@ app.post('/api/forms/learning', async (req, res) => {
     await runWithRetry(async () => notifyRequired([
       sendEmail({ subject: 'Заявка на обучение · Земля Искусства', text }),
     ]))
-    await notifyOptional([
-      sendTelegramMessage({ text: telegramText }),
-    ])
     res.json({ ok: true })
+    runNotificationTask('learning', async () => {
+      await notifyOptional([
+        sendTelegramMessage({ text: telegramText }),
+      ])
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
     if (err?.name === 'ZodError') {
@@ -359,18 +371,20 @@ app.post('/api/forms/competition', async (req, res) => {
     await runWithRetry(async () => notifyRequired([
       sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
     ]))
-    await notifyOptional([
-      sendEmail({
-        subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
-        text: competitionConfirmToText(payload),
-        html: competitionConfirmToHtml(payload),
-        to: payload.email,
-      }),
-    ])
-    await notifyOptional([
-      sendTelegramMessage({ text: telegramText }),
-    ])
     res.json({ ok: true })
+    runNotificationTask('competition', async () => {
+      await notifyOptional([
+        sendEmail({
+          subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
+          text: competitionConfirmToText(payload),
+          html: competitionConfirmToHtml(payload),
+          to: payload.email,
+        }),
+      ])
+      await notifyOptional([
+        sendTelegramMessage({ text: telegramText }),
+      ])
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
     if (err?.name === 'ZodError') {
@@ -390,18 +404,20 @@ app.post('/api/forms/booking', async (req, res) => {
     await runWithRetry(async () => notifyRequired([
       sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
     ]))
-    await notifyOptional([
-      sendEmail({
-        subject: 'Мы получили вашу заявку · Земля Искусства',
-        text: bookingConfirmToText(payload),
-        html: bookingConfirmToHtml(payload),
-        to: payload.email,
-      }),
-    ])
-    await notifyOptional([
-      sendTelegramMessage({ text: telegramText }),
-    ])
     res.json({ ok: true })
+    runNotificationTask('booking', async () => {
+      await notifyOptional([
+        sendEmail({
+          subject: 'Мы получили вашу заявку · Земля Искусства',
+          text: bookingConfirmToText(payload),
+          html: bookingConfirmToHtml(payload),
+          to: payload.email,
+        }),
+      ])
+      await notifyOptional([
+        sendTelegramMessage({ text: telegramText }),
+      ])
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
     if (err?.name === 'ZodError') {
