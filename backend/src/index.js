@@ -85,6 +85,39 @@ app.get('/api/debug/smtp', async (req, res) => {
   })
 })
 
+async function testSmtpTcp(host, port, timeoutMs) {
+  if (!host || !port) return false
+  const socket = new net.Socket()
+
+  const connected = await new Promise((resolve) => {
+    const onOk = () => {
+      cleanup()
+      resolve(true)
+    }
+    const onErr = () => {
+      cleanup()
+      resolve(false)
+    }
+    const cleanup = () => {
+      try {
+        socket.removeListener('connect', onOk)
+        socket.removeListener('error', onErr)
+        socket.removeListener('timeout', onErr)
+      } catch {}
+      try {
+        socket.destroy()
+      } catch {}
+    }
+    socket.setTimeout(timeoutMs)
+    socket.once('connect', onOk)
+    socket.once('error', onErr)
+    socket.once('timeout', onErr)
+    socket.connect(port, host)
+  })
+
+  return connected
+}
+
 // Если собранный фронтенд уже лежит в frontend/dist — раздаём его.
 // Это удобно для деплоя одним сервисом (backend + статический сайт).
 const distPath = path.join(__dirname, '../../frontend/dist')
@@ -162,6 +195,11 @@ async function sendEmail({ subject, text, html, to }) {
   const firstRecipient = String(finalTo[0] ?? '').slice(0, 80)
 
   async function attemptSend({ attemptSecure, attemptPort }) {
+    const tcpOk = await testSmtpTcp(smtpHost, attemptPort, Math.min(5000, NOTIFY_TIMEOUT_MS))
+    if (!tcpOk) {
+      throw new Error(`SMTP TCP connection failed to ${smtpHost}:${attemptPort}`)
+    }
+
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: attemptPort,
