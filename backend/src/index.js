@@ -85,6 +85,23 @@ app.get('/api/debug/smtp', async (req, res) => {
   })
 })
 
+// Диагностика: проверяем доступность нескольких типичных SMTP-портов.
+app.get('/api/debug/smtp-ports', async (req, res) => {
+  const host = process.env.SMTP_HOST ?? ''
+  if (!host) return res.status(400).json({ ok: false, error: 'SMTP_HOST not set' })
+
+  const ports = [465, 587]
+  const timeoutMs = 3000
+  const results = []
+  for (const port of ports) {
+    // Для quick-check'а secure не важен: нас интересует именно TCP-доступ.
+    const connected = await testSmtpTcp(host, port, timeoutMs)
+    results.push({ port, connected })
+  }
+
+  return res.json({ ok: true, host, results })
+})
+
 async function testSmtpTcp(host, port, timeoutMs) {
   if (!host || !port) return false
   const socket = new net.Socket()
