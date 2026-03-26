@@ -49,7 +49,7 @@ function hasTelegramConfig() {
   return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
 }
 
-async function sendEmail({ subject, text }) {
+async function sendEmail({ subject, text, html, to }) {
   if (!hasEmailConfig()) return { skipped: true }
 
   const transporter = nodemailer.createTransport({
@@ -62,13 +62,15 @@ async function sendEmail({ subject, text }) {
     },
   })
 
-  const toList = process.env.EMAIL_TO.split(',').map((s) => s.trim()).filter(Boolean)
+  const defaultToList = process.env.EMAIL_TO.split(',').map((s) => s.trim()).filter(Boolean)
+  const toList = (Array.isArray(to) ? to : [to]).filter(Boolean)
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
-    to: toList,
+    to: toList.length ? toList : defaultToList,
     subject,
     text,
+    html,
   })
 
   return { skipped: false }
@@ -160,6 +162,17 @@ function competitionToText(payload) {
   return lines.join('\n')
 }
 
+function competitionConfirmToText(payload) {
+  return [
+    `Здравствуйте, ${payload.participantName}!`,
+    ``,
+    `Спасибо за заявку на конкурс на сайте "Земля Искусства".`,
+    `Мы получили ваши данные и скоро свяжемся с вами.`,
+    ``,
+    `Если вы не отправляли эту заявку, просто проигнорируйте письмо.`,
+  ].join('\n')
+}
+
 const offerTypeLabels = {
   direction: 'Направление',
   workshop: 'Мастер-класс',
@@ -176,6 +189,70 @@ function bookingToText(payload) {
     `Телефон: ${payload.phone}`,
     `Email: ${payload.email}`,
   ].join('\n')
+}
+
+function bookingConfirmToText(payload) {
+  const kind = offerTypeLabels[payload.offerType] ?? payload.offerType
+  return [
+    `Здравствуйте, ${payload.fullName}!`,
+    ``,
+    `Спасибо за заявку на сайте "Земля Искусства".`,
+    `Мы получили вашу заявку: ${kind} — ${payload.offerTitle}.`,
+    `Наш менеджер свяжется с вами в ближайшее время по телефону или email.`,
+    ``,
+    `Если вы не оставляли эту заявку, просто проигнорируйте письмо.`,
+  ].join('\n')
+}
+
+function bookingConfirmToHtml(payload) {
+  const kind = escapeHtml(offerTypeLabels[payload.offerType] ?? payload.offerType)
+  const fullName = escapeHtml(payload.fullName)
+  const offerTitle = escapeHtml(payload.offerTitle)
+  const phone = escapeHtml(payload.phone)
+  const email = escapeHtml(payload.email)
+
+  return `
+  <div style="font-family:Arial,sans-serif;background:#f6f8fb;padding:24px;color:#1f2937;">
+    <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;padding:24px;border:1px solid #e5e7eb;">
+      <h2 style="margin:0 0 12px;color:#111827;">Заявка принята</h2>
+      <p style="margin:0 0 14px;">Здравствуйте, <strong>${fullName}</strong>!</p>
+      <p style="margin:0 0 14px;">Спасибо за заявку на сайте <strong>Земля Искусства</strong>.</p>
+      <p style="margin:0 0 14px;">Мы получили вашу заявку и скоро свяжемся с вами.</p>
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;margin:14px 0;">
+        <p style="margin:0 0 6px;"><strong>Тип:</strong> ${kind}</p>
+        <p style="margin:0 0 6px;"><strong>Выбор:</strong> ${offerTitle}</p>
+        <p style="margin:0 0 6px;"><strong>Телефон:</strong> ${phone}</p>
+        <p style="margin:0;"><strong>Email:</strong> ${email}</p>
+      </div>
+      <p style="margin:14px 0 0;color:#4b5563;">Если вы не оставляли эту заявку, просто проигнорируйте письмо.</p>
+    </div>
+  </div>`.trim()
+}
+
+function competitionConfirmToHtml(payload) {
+  const fullName = escapeHtml(payload.participantName)
+  const phone = escapeHtml(payload.phone)
+  const email = escapeHtml(payload.email)
+  const age = escapeHtml(payload.age)
+  const workTitle = escapeHtml(payload.workTitle)
+
+  return `
+  <div style="font-family:Arial,sans-serif;background:#f6f8fb;padding:24px;color:#1f2937;">
+    <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;padding:24px;border:1px solid #e5e7eb;">
+      <h2 style="margin:0 0 12px;color:#111827;">Заявка на конкурс принята</h2>
+      <p style="margin:0 0 14px;">Здравствуйте, <strong>${fullName}</strong>!</p>
+      <p style="margin:0 0 14px;">Спасибо за участие в конкурсе от <strong>Земля Искусства</strong>.</p>
+      <p style="margin:0 0 14px;">Мы получили вашу заявку и скоро с вами свяжемся.</p>
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;margin:14px 0;">
+        <p style="margin:0 0 6px;"><strong>ФИО:</strong> ${fullName}</p>
+        <p style="margin:0 0 6px;"><strong>Возраст/категория:</strong> ${age}</p>
+        <p style="margin:0 0 6px;"><strong>Работа/номинация:</strong> ${workTitle}</p>
+        <p style="margin:0 0 6px;"><strong>Телефон:</strong> ${phone}</p>
+        <p style="margin:0;"><strong>Email:</strong> ${email}</p>
+      </div>
+      <p style="margin:14px 0 0;color:#4b5563;">Если вы не отправляли эту заявку, просто проигнорируйте письмо.</p>
+    </div>
+  </div>`.trim()
 }
 
 app.post('/api/forms/learning', async (req, res) => {
@@ -209,6 +286,12 @@ app.post('/api/forms/competition', async (req, res) => {
 
     await Promise.all([
       sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
+      sendEmail({
+        subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
+        text: competitionConfirmToText(payload),
+        html: competitionConfirmToHtml(payload),
+        to: payload.email,
+      }),
       sendTelegramMessage({ text: telegramText }),
     ])
 
@@ -231,6 +314,12 @@ app.post('/api/forms/booking', async (req, res) => {
 
     await Promise.all([
       sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
+      sendEmail({
+        subject: 'Мы получили вашу заявку · Земля Искусства',
+        text: bookingConfirmToText(payload),
+        html: bookingConfirmToHtml(payload),
+        to: payload.email,
+      }),
       sendTelegramMessage({ text: telegramText }),
     ])
 
