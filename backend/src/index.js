@@ -193,61 +193,74 @@ async function sendEmail({ subject, text, html, to }) {
   }
 
   const firstRecipient = String(finalTo[0] ?? '').slice(0, 80)
+  const tcpTimeoutMs = Math.min(5000, NOTIFY_TIMEOUT_MS)
 
-  async function attemptSend({ attemptSecure, attemptPort }) {
-    const tcpOk = await testSmtpTcp(smtpHost, attemptPort, Math.min(5000, NOTIFY_TIMEOUT_MS))
-    if (!tcpOk) {
-      throw new Error(`SMTP TCP connection failed to ${smtpHost}:${attemptPort}`)
-    }
+  const candidates = []
+  candidates.push({ port: smtpPort, secure: smtpSecure })
+  if (smtpPort !== 465) candidates.push({ port: 465, secure: true })
+  if (smtpPort !== 587) candidates.push({ port: 587, secure: false })
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: attemptPort,
-      secure: attemptSecure,
-      connectionTimeout: NOTIFY_TIMEOUT_MS,
-      greetingTimeout: NOTIFY_TIMEOUT_MS,
-      socketTimeout: NOTIFY_TIMEOUT_MS,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
+  // Убираем дубликаты кандидатов
+  const seen = new Set()
+  const uniqueCandidates = candidates.filter((c) => {
+    const key = `${c.port}:${c.secure ? 1 : 0}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 
-    await withTimeout(
-      transporter.sendMail({
-        from: process.env.EMAIL_FROM,
-        to: finalTo,
-        subject,
-        text,
-        html,
-      }),
-      NOTIFY_TIMEOUT_MS,
-      `email send to ${firstRecipient}`,
-    )
-  }
+  let lastErr
 
-  try {
-    await attemptSend({ attemptSecure: smtpSecure, attemptPort: smtpPort })
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    // Fallback: если пробовали 587/другой порт, но таймаут — попробуем 465 secure=true.
-    const isTimeout = msg.toLowerCase().includes('timeout')
-    const fallbackPort = 465
-    if (isTimeout && smtpPort !== fallbackPort) {
-      console.error('SMTP timeout, retrying with fallback port 465:', {
+  for (const candidate of uniqueCandidates) {
+    const { port: attemptPort, secure: attemptSecure } = candidate
+
+    try {
+      const tcpOk = await testSmtpTcp(smtpHost, attemptPort, tcpTimeoutMs)
+      if (!tcpOk) {
+        lastErr = new Error(`SMTP TCP connection failed to ${smtpHost}:${attemptPort}`)
+        continue
+      }
+
+      const transporter = nodemailer.createTransport({
         host: smtpHost,
-        from: process.env.EMAIL_FROM,
-        to: finalTo,
-        secure: true,
-        originalPort: smtpPort,
+        port: attemptPort,
+        secure: attemptSecure,
+        connectionTimeout: NOTIFY_TIMEOUT_MS,
+        greetingTimeout: NOTIFY_TIMEOUT_MS,
+        socketTimeout: NOTIFY_TIMEOUT_MS,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
       })
-      await attemptSend({ attemptSecure: true, attemptPort: fallbackPort })
-    } else {
-      throw err
+
+      await withTimeout(
+        transporter.sendMail({
+          from: process.env.EMAIL_FROM,
+          to: finalTo,
+          subject,
+          text,
+          html,
+        }),
+        NOTIFY_TIMEOUT_MS,
+        `email send to ${firstRecipient} via ${smtpHost}:${attemptPort} secure=${attemptSecure}`,
+      )
+
+      return { ok: true }
+    } catch (err) {
+      lastErr = err
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('SMTP candidate failed:', {
+        host: smtpHost,
+        port: attemptPort,
+        secure: attemptSecure,
+        recipient: firstRecipient,
+        error: msg,
+      })
     }
   }
 
-  return { ok: true }
+  throw lastErr ?? new Error('SMTP send failed')
 }
 
 async function sendTelegramMessage({ text }) {
