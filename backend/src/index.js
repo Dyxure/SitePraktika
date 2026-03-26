@@ -12,6 +12,15 @@ const app = express()
 app.use(cors())
 app.use(express.json({ limit: '1mb' }))
 
+// Чтобы парсинг JSON не валил контейнер/логи огромными stack traces,
+// а клиент получал понятную ошибку.
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({ ok: false, error: 'Invalid JSON body' })
+  }
+  return next(err)
+})
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true })
 })
@@ -51,7 +60,9 @@ function hasTelegramConfig() {
 
 // Таймауты нужны, чтобы SMTP успевал установить соединение и отправить письмо.
 // Запрос к API в фронте не должен зависеть от уведомлений: они уходят в фоне.
-const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 15000)
+// Даже если NOTIFY_TIMEOUT_MS случайно выставили слишком маленьким — принудительно увеличим.
+const NOTIFY_TIMEOUT_MS_RAW = Number(process.env.NOTIFY_TIMEOUT_MS ?? 15000)
+const NOTIFY_TIMEOUT_MS = Number.isFinite(NOTIFY_TIMEOUT_MS_RAW) ? Math.max(NOTIFY_TIMEOUT_MS_RAW, 15000) : 15000
 
 async function withTimeout(promise, timeoutMs, label) {
   let timeoutId
@@ -70,33 +81,71 @@ async function sendEmail({ subject, text, html, to }) {
     throw new Error('Email configuration is incomplete')
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: String(process.env.SMTP_SECURE ?? 'false') === 'true',
-    connectionTimeout: NOTIFY_TIMEOUT_MS,
-    greetingTimeout: NOTIFY_TIMEOUT_MS,
-    socketTimeout: NOTIFY_TIMEOUT_MS,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  })
+  const smtpHost = process.env.SMTP_HOST
+  const smtpPort = Number(process.env.SMTP_PORT)
+  const smtpSecureRaw = process.env.SMTP_SECURE ?? ''
+  const smtpSecureNormalized = String(smtpSecureRaw).trim().toLowerCase()
+  // Если SMTP_SECURE не задан явно — ориентируемся на порт (465 обычно требует secure=true)
+  const smtpSecure =
+    smtpSecureNormalized !== ''
+      ? smtpSecureNormalized === 'true' || smtpSecureNormalized === '1' || smtpSecureNormalized === 'yes'
+      : smtpPort === 465
 
   const defaultToList = process.env.EMAIL_TO.split(',').map((s) => s.trim()).filter(Boolean)
   const toList = (Array.isArray(to) ? to : [to]).filter(Boolean)
 
-  await withTimeout(
-    transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: toList.length ? toList : defaultToList,
-      subject,
-      text,
-      html,
-    }),
-    NOTIFY_TIMEOUT_MS,
-    'email send',
-  )
+  const finalTo = toList.length ? toList : defaultToList
+  if (!finalTo.length) {
+    throw new Error('Email recipient list is empty')
+  }
+
+  async function attemptSend({ attemptSecure, attemptPort }) {
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: attemptPort,
+      secure: attemptSecure,
+      connectionTimeout: NOTIFY_TIMEOUT_MS,
+      greetingTimeout: NOTIFY_TIMEOUT_MS,
+      socketTimeout: NOTIFY_TIMEOUT_MS,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+
+    await withTimeout(
+      transporter.sendMail({
+        from: process.env.EMAIL_FROM,
+        to: finalTo,
+        subject,
+        text,
+        html,
+      }),
+      NOTIFY_TIMEOUT_MS,
+      'email send',
+    )
+  }
+
+  try {
+    await attemptSend({ attemptSecure: smtpSecure, attemptPort: smtpPort })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    // Fallback: если пробовали 587/другой порт, но таймаут — попробуем 465 secure=true.
+    const isTimeout = msg.toLowerCase().includes('timeout')
+    const fallbackPort = 465
+    if (isTimeout && smtpPort !== fallbackPort) {
+      console.error('SMTP timeout, retrying with fallback port 465:', {
+        host: smtpHost,
+        from: process.env.EMAIL_FROM,
+        to: finalTo,
+        secure: true,
+        originalPort: smtpPort,
+      })
+      await attemptSend({ attemptSecure: true, attemptPort: fallbackPort })
+    } else {
+      throw err
+    }
+  }
 
   return { ok: true }
 }
