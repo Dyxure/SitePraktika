@@ -49,7 +49,9 @@ function hasTelegramConfig() {
   return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
 }
 
-const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 4000)
+// Таймауты нужны, чтобы SMTP успевал установить соединение и отправить письмо.
+// Запрос к API в фронте не должен зависеть от уведомлений: они уходят в фоне.
+const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 15000)
 
 async function withTimeout(promise, timeoutMs, label) {
   let timeoutId
@@ -336,11 +338,10 @@ app.post('/api/forms/learning', async (req, res) => {
       await runWithRetry(
         () => sendEmail({ subject: 'Заявка на обучение · Земля Искусства', text }),
         3,
-        800,
+        900,
       )
-      await notifyOptional([
-        sendTelegramMessage({ text: telegramText }),
-      ])
+      // Telegram отправляем только если он настроен (sendTelegramMessage сам пропустит).
+      await runWithRetry(() => sendTelegramMessage({ text: telegramText }), 2, 900)
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
@@ -363,19 +364,20 @@ app.post('/api/forms/competition', async (req, res) => {
       await runWithRetry(
         () => sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
         3,
-        800,
+        900,
       )
-      await notifyOptional([
-        sendEmail({
-          subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
-          text: competitionConfirmToText(payload),
-          html: competitionConfirmToHtml(payload),
-          to: payload.email,
-        }),
-      ])
-      await notifyOptional([
-        sendTelegramMessage({ text: telegramText }),
-      ])
+      await runWithRetry(
+        () =>
+          sendEmail({
+            subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
+            text: competitionConfirmToText(payload),
+            html: competitionConfirmToHtml(payload),
+            to: payload.email,
+          }),
+        3,
+        900,
+      )
+      await runWithRetry(() => sendTelegramMessage({ text: telegramText }), 2, 900)
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
@@ -398,19 +400,20 @@ app.post('/api/forms/booking', async (req, res) => {
       await runWithRetry(
         () => sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
         3,
-        800,
+        900,
       )
-      await notifyOptional([
-        sendEmail({
-          subject: 'Мы получили вашу заявку · Земля Искусства',
-          text: bookingConfirmToText(payload),
-          html: bookingConfirmToHtml(payload),
-          to: payload.email,
-        }),
-      ])
-      await notifyOptional([
-        sendTelegramMessage({ text: telegramText }),
-      ])
+      await runWithRetry(
+        () =>
+          sendEmail({
+            subject: 'Мы получили вашу заявку · Земля Искусства',
+            text: bookingConfirmToText(payload),
+            html: bookingConfirmToHtml(payload),
+            to: payload.email,
+          }),
+        3,
+        900,
+      )
+      await runWithRetry(() => sendTelegramMessage({ text: telegramText }), 2, 900)
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
