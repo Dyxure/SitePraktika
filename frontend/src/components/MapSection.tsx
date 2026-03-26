@@ -31,6 +31,8 @@ export default function MapSection() {
             width="100%"
             height="500"
             frameBorder="0"
+            loading="lazy"
+            title="Карта проезда"
           />
         </div>
       </div>

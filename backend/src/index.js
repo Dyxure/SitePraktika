@@ -151,6 +151,21 @@ async function notifyRequired(tasks) {
   throw new Error('Не удалось отправить email-уведомление. Попробуйте позже.')
 }
 
+async function runWithRetry(fn, attempts = 2, delayMs = 700) {
+  let lastError
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      return await fn()
+    } catch (err) {
+      lastError = err
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
+      }
+    }
+  }
+  throw lastError
+}
+
 function escapeHtml(s) {
   return String(s ?? '')
     .replaceAll('&', '&amp;')
@@ -318,13 +333,12 @@ app.post('/api/forms/learning', async (req, res) => {
     const text = learningToText(payload)
     const telegramText = `<b>Заявка на обучение</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
 
-    await notifyRequired([
+    await runWithRetry(async () => notifyRequired([
       sendEmail({ subject: 'Заявка на обучение · Земля Искусства', text }),
-    ])
+    ]))
     await notifyOptional([
       sendTelegramMessage({ text: telegramText }),
     ])
-
     res.json({ ok: true })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
@@ -342,9 +356,9 @@ app.post('/api/forms/competition', async (req, res) => {
     const text = competitionToText(payload)
     const telegramText = `<b>Заявка на конкурс</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
 
-    await notifyRequired([
+    await runWithRetry(async () => notifyRequired([
       sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
-    ])
+    ]))
     await notifyOptional([
       sendEmail({
         subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
@@ -356,7 +370,6 @@ app.post('/api/forms/competition', async (req, res) => {
     await notifyOptional([
       sendTelegramMessage({ text: telegramText }),
     ])
-
     res.json({ ok: true })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
@@ -374,9 +387,9 @@ app.post('/api/forms/booking', async (req, res) => {
     const text = bookingToText(payload)
     const telegramText = `<b>Заявка (курс / МК / направление)</b>\n` + escapeHtml(text).replaceAll('\n', '<br/>')
 
-    await notifyRequired([
+    await runWithRetry(async () => notifyRequired([
       sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
-    ])
+    ]))
     await notifyOptional([
       sendEmail({
         subject: 'Мы получили вашу заявку · Земля Искусства',
@@ -388,7 +401,6 @@ app.post('/api/forms/booking', async (req, res) => {
     await notifyOptional([
       sendTelegramMessage({ text: telegramText }),
     ])
-
     res.json({ ok: true })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ошибка'
