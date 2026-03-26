@@ -49,7 +49,7 @@ function hasTelegramConfig() {
   return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
 }
 
-const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 12000)
+const NOTIFY_TIMEOUT_MS = Number(process.env.NOTIFY_TIMEOUT_MS ?? 7000)
 
 async function withTimeout(promise, timeoutMs, label) {
   let timeoutId
@@ -344,6 +344,8 @@ app.post('/api/forms/competition', async (req, res) => {
 
     await notifyRequired([
       sendEmail({ subject: 'Заявка на конкурс · Земля Искусства', text }),
+    ])
+    await notifyOptional([
       sendEmail({
         subject: 'Мы получили вашу заявку на конкурс · Земля Искусства',
         text: competitionConfirmToText(payload),
@@ -374,6 +376,8 @@ app.post('/api/forms/booking', async (req, res) => {
 
     await notifyRequired([
       sendEmail({ subject: 'Заявка с сайта · Земля Искусства', text }),
+    ])
+    await notifyOptional([
       sendEmail({
         subject: 'Мы получили вашу заявку · Земля Искусства',
         text: bookingConfirmToText(payload),
