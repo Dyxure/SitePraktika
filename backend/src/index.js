@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer')
 const { z } = require('zod')
 const path = require('path')
 const fs = require('fs')
+const net = require('net')
 
 dotenv.config()
 
@@ -23,6 +24,65 @@ app.use((err, req, res, next) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true })
+})
+
+// Диагностика: проверяем TCP-доступность SMTP-хоста/порта из среды Railway.
+// Секреты (пароли) не возвращаем.
+app.get('/api/debug/smtp', async (req, res) => {
+  const host = process.env.SMTP_HOST ?? ''
+  const port = Number(process.env.SMTP_PORT ?? 0)
+  const from = process.env.EMAIL_FROM ?? ''
+  const secureRaw = process.env.SMTP_SECURE ?? ''
+  const secureNormalized = String(secureRaw).trim().toLowerCase()
+  const secureByPort = port === 465
+  const secure =
+    secureNormalized !== ''
+      ? secureNormalized === 'true' || secureNormalized === '1' || secureNormalized === 'yes'
+      : secureByPort
+
+  if (!host || !port) {
+    return res.status(400).json({ ok: false, error: 'SMTP_HOST/SMTP_PORT not set' })
+  }
+
+  const timeoutMs = 5000
+  const socket = new net.Socket()
+
+  const connected = await new Promise((resolve) => {
+    const onOk = () => {
+      cleanup()
+      resolve(true)
+    }
+    const onErr = () => {
+      cleanup()
+      resolve(false)
+    }
+    const cleanup = () => {
+      socket.removeListener('connect', onOk)
+      socket.removeListener('error', onErr)
+      socket.removeListener('timeout', onErr)
+      try {
+        socket.destroy()
+      } catch {}
+    }
+
+    socket.setTimeout(timeoutMs)
+    socket.once('connect', onOk)
+    socket.once('error', onErr)
+    socket.once('timeout', onErr)
+    socket.connect(port, host)
+  })
+
+  return res.json({
+    ok: true,
+    connected,
+    host,
+    port,
+    secure,
+    from,
+    note: connected
+      ? 'TCP connection works. Next step: check SMTP auth and STARTTLS/SSL settings.'
+      : 'TCP connection failed. Likely wrong host/port or outbound SMTP blocked from Railway.',
+  })
 })
 
 // Если собранный фронтенд уже лежит в frontend/dist — раздаём его.
@@ -99,6 +159,8 @@ async function sendEmail({ subject, text, html, to }) {
     throw new Error('Email recipient list is empty')
   }
 
+  const firstRecipient = String(finalTo[0] ?? '').slice(0, 80)
+
   async function attemptSend({ attemptSecure, attemptPort }) {
     const transporter = nodemailer.createTransport({
       host: smtpHost,
@@ -122,7 +184,7 @@ async function sendEmail({ subject, text, html, to }) {
         html,
       }),
       NOTIFY_TIMEOUT_MS,
-      'email send',
+      `email send to ${firstRecipient}`,
     )
   }
 
